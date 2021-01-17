@@ -36,6 +36,10 @@ const router = new VueRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
+    if (to.matched.some(record => record.meta.title)) {
+        document.title = to.matched[0].meta.title;
+    }
+
     if (to.matched.some(record => record.meta.requiresAuth)) {
         await store.dispatch('loginLocalUser');
         let isNotLoggedIn = !store.getters.isLoggedIn;
