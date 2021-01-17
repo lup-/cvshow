@@ -182,6 +182,11 @@
         },
         computed: {
             cvSlug() {
+                let isSubdomain = /^([^.]+)\.yozh\.space$/.test(location.hostname);
+                if (isSubdomain) {
+                    let [, slug] = location.hostname.match(/^([^.]+)\.yozh\.space$/);
+                    return slug;
+                }
                 return (this.$route.params && this.$route.params.slug) || false;
             },
             cv() {

@@ -64,7 +64,10 @@
                 this.$router.push({name: 'cvEdit', params: {id}});
             },
             getLink(item) {
-                return `/${item.slug}`;
+                let isProd = /yozh\.space$/.test(location.hostname);
+                return isProd
+                    ? `//${item.slug}.yozh.space`
+                    : `/${item.slug}`;
             }
         },
         computed: {

@@ -12,18 +12,22 @@ import UsersList from '../components/Users/List';
 
 Vue.use(VueRouter);
 
-const routes = [
-    { name: 'Home', path: '/', meta: {title: 'ЁжSearch', requiresAuth: true, group: 'home'}, component: Home },
-    { name: 'login', path: '/login', component: Login },
-    { name: 'cvList', path: '/cv/list', meta: {title: 'ЁжSearch - Список резюме', requiresAuth: true, group: 'cvList'}, component: CvList },
-    { name: 'cvEdit', path: '/cv/edit/:id', meta: {title: 'ЁжSearch - Редактирование резюме', requiresAuth: true, group: 'cvList'}, component: CvEdit },
-    { name: 'cvNew', path: '/cv/new',  meta: {title: 'ЁжSearch - Новое резюме', requiresAuth: true, group: 'cvList'}, component: CvEdit },
-    { name: 'userList', path: '/users/', component: UsersList, meta: {requiresAuth: true, group: 'userList'} },
-    { name: 'userNew', path: '/users/new', component: UsersEdit, meta: {requiresAuth: true, group: 'userList'} },
-    { name: 'userEdit', path: '/users/:id', component: UsersEdit, meta: {requiresAuth: true, group: 'userList'} },
+let isSubdomain = /^([^.]+)\.yozh\.space$/.test(location.hostname);
 
-    { path: '/:slug', name: 'Show', meta: {title: 'ЁжSearch', requiresAuth: false, group: 'Show'}, component: CvShow },
-]
+const routes = isSubdomain
+    ? [ { path: '/', name: 'Show', meta: {title: 'ЁжSearch', requiresAuth: false, group: 'Show'}, component: CvShow } ]
+    : [
+        { name: 'Home', path: '/', meta: {title: 'ЁжSearch', requiresAuth: true, group: 'home'}, component: Home },
+        { name: 'login', path: '/login', component: Login },
+        { name: 'cvList', path: '/cv/list', meta: {title: 'ЁжSearch - Список резюме', requiresAuth: true, group: 'cvList'}, component: CvList },
+        { name: 'cvEdit', path: '/cv/edit/:id', meta: {title: 'ЁжSearch - Редактирование резюме', requiresAuth: true, group: 'cvList'}, component: CvEdit },
+        { name: 'cvNew', path: '/cv/new',  meta: {title: 'ЁжSearch - Новое резюме', requiresAuth: true, group: 'cvList'}, component: CvEdit },
+        { name: 'userList', path: '/users/', component: UsersList, meta: {requiresAuth: true, group: 'userList'} },
+        { name: 'userNew', path: '/users/new', component: UsersEdit, meta: {requiresAuth: true, group: 'userList'} },
+        { name: 'userEdit', path: '/users/:id', component: UsersEdit, meta: {requiresAuth: true, group: 'userList'} },
+
+        { path: '/:slug', name: 'Show', meta: {title: 'ЁжSearch', requiresAuth: false, group: 'Show'}, component: CvShow },
+    ];
 
 const router = new VueRouter({
     mode: 'history',
