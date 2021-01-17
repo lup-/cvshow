@@ -6,7 +6,50 @@ const COLLECTION_NAME = 'cvs';
 const ITEM_NAME = 'cv';
 const ITEMS_NAME = 'cvs';
 
+function transliterate(str) {
+    let ttable = {"Ё":"YO","Й":"I","Ц":"TS","У":"U","К":"K","Е":"E","Н":"N","Г":"G","Ш":"SH","Щ":"SCH","З":"Z","Х":"H","Ъ":"'","ё":"yo","й":"i","ц":"ts","у":"u","к":"k","е":"e","н":"n","г":"g","ш":"sh","щ":"sch","з":"z","х":"h","ъ":"'","Ф":"F","Ы":"I","В":"V","А":"a","П":"P","Р":"R","О":"O","Л":"L","Д":"D","Ж":"ZH","Э":"E","ф":"f","ы":"i","в":"v","а":"a","п":"p","р":"r","о":"o","л":"l","д":"d","ж":"zh","э":"e","Я":"Ya","Ч":"CH","С":"S","М":"M","И":"I","Т":"T","Ь":"'","Б":"B","Ю":"YU","я":"ya","ч":"ch","с":"s","м":"m","и":"i","т":"t","ь":"'","б":"b","ю":"yu"};
+
+    return str.split('').map(function (char) {
+        return ttable[char] || char;
+    }).join("");
+}
+async function getSlug(cv) {
+    let slug = transliterate(cv.name)
+        .replace(/[^a-z ]+/gi, '')
+        .toLowerCase()
+        .trim()
+        .split(' ')
+        .map((name, index) => index === 0 ? name : name[0])
+        .filter((val, index) => index < 3)
+        .join('');
+
+    let db = await getDb();
+    let items = await db.collection(COLLECTION_NAME).find({slug}).toArray();
+    if (items.length > 0) {
+        slug += items.length.toString().padStart(2, '0');
+    }
+
+    return slug;
+}
+
 module.exports = {
+    async get(ctx) {
+        let slug = ctx.request.body && ctx.request.body.slug
+            ? ctx.request.body.slug || false
+            : false;
+
+        let query = {
+            slug,
+            'deleted': {$in: [null, false]}
+        };
+
+        let db = await getDb();
+        let item = await db.collection(COLLECTION_NAME).findOne(query);
+        let response = {};
+        response[ITEM_NAME] = item;
+
+        ctx.body = response;
+    },
     async list(ctx) {
         let filter = ctx.request.body && ctx.request.body.filter
             ? ctx.request.body.filter || {}
@@ -27,6 +70,10 @@ module.exports = {
     },
     async add(ctx) {
         let itemFields = ctx.request.body[ITEM_NAME];
+        if (!itemFields.slug) {
+            itemFields.slug = await getSlug(itemFields);
+        }
+
         if (itemFields._id) {
             let response = {};
             response[ITEM_NAME] = false;

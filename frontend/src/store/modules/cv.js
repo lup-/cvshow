@@ -3,15 +3,30 @@ import axios from "axios";
 export default {
     state: {
         list: [],
+        all: [],
         categories: [],
         current: false,
         currentFilter: {}
     },
+    getters: {
+        vacancies(state) {
+            return state.all.map(cv => cv.vacancy).filter((vacancy, index, all) => vacancy && vacancy.length > 0 && all.indexOf(vacancy) === index);
+        }
+    },
     actions: {
         async loadCvs({commit}, filter = {}) {
-            let response = await axios.post(`/api/cv/list`, {filter});
+            let response = await axios.post(`/api/cv/list`, {});
+            commit('setAllCvs', response.data.cvs);
+
+            response = await axios.post(`/api/cv/list`, {filter});
             await commit('setFilter', filter);
             return commit('setCvs', response.data.cvs);
+        },
+        async loadCvBySlug({commit}, slug) {
+            let response = await axios.post(`/api/cv/get`, {slug});
+            if (response && response.data) {
+                commit('setCurrentCv', response.data.cv);
+            }
         },
         async setCurrentCv({commit, state}, cvId) {
             let cv = state.list.find(item => item.id === cvId);
@@ -42,6 +57,9 @@ export default {
     mutations: {
         setCvs(state, cvs) {
             state.list = cvs;
+        },
+        setAllCvs(state, cvs) {
+            state.all = cvs;
         },
         setCurrentCv(state, cv) {
             state.current = cv;
