@@ -1,6 +1,7 @@
 const {getDb} = require('../modules/Database');
 const shortid = require('shortid');
 const moment = require('moment');
+const {parseFile} = require('../modules/Resume');
 
 const COLLECTION_NAME = 'cvs';
 const ITEM_NAME = 'cv';
@@ -129,5 +130,21 @@ module.exports = {
         response[ITEM_NAME] = item;
 
         ctx.body = response;
+    },
+    async resume(ctx) {
+        let skills = ctx.request.body && ctx.request.body.skills
+            ? ctx.request.body.skills || []
+            : [];
+        let uploadedFile = ctx.req.file;
+        let name = uploadedFile.originalname;
+        let buffer = uploadedFile.buffer;
+
+        try {
+            let {docText, candidate} = await parseFile({name, buffer}, skills, true);
+            ctx.body = {candidate, docText};
+        }
+        catch (e) {
+            ctx.body = {error: e};
+        }
     }
 }

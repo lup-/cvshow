@@ -158,3 +158,8 @@ dot.env
 
 # Custom
 /etc/database/*
+/files/*
+/test/*.doc
+/test/*.pdf
+/test/*.docx
+/test/*.rtf

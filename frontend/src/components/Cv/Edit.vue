@@ -124,21 +124,29 @@
                     <v-card-actions>
                         <v-btn @click="$router.push({name: 'cvList'})">К списку</v-btn>
                         <v-btn large color="primary" @click="save">Сохранить</v-btn>
+                        <v-spacer></v-spacer>
+                        <v-btn large color="primary" @click="selectFile" :loading="isResumeUploading">Распознать резюме</v-btn>
                     </v-card-actions>
                 </v-card>
             </v-col>
         </v-row>
+        <input type="file" style="display: none" ref="fileInput" @change="fillDataFromResume">
     </v-container>
 </template>
 
 <script>
+    import axios from "axios";
+    import moment from "moment";
+
     export default {
         name: "Edit",
         data() {
             return {
                 cv: {},
+                parsed: false,
                 defaultCv: {},
                 activeTab: 'main',
+                isResumeUploading: false,
                 telegram: null,
                 tabs: [
                     {code: 'main', title: 'Основные данные'},
@@ -173,6 +181,9 @@
             storeCv() {
                 if (this.storeCv) {
                     this.cv = this.storeCv;
+                    if (this.cv.parsed) {
+                        this.parsed = this.cv.parsed;
+                    }
                     if (this.cv.telegram) {
                         this.telegram = this.cv.telegram;
                     }
@@ -191,6 +202,7 @@
         },
         methods: {
             async save() {
+                this.cv.parsed = this.parsed;
                 if (this.isNew) {
                     await this.$store.dispatch('newCv', this.cv);
                 }
@@ -220,6 +232,88 @@
             },
             updateVacancy(val) {
                 this.cv.vacancy = val;
+            },
+            selectFile() {
+                this.$refs.fileInput.click();
+            },
+            async fillDataFromResume() {
+                let file = this.$refs.fileInput.files[0];
+
+                let requestData = new FormData();
+                requestData.append('file', file);
+
+                try {
+                    this.isResumeUploading = true;
+                    let {data} = await axios.post('/api/cv/resume',
+                        requestData,
+                        {
+                            headers: {'Content-Type': 'multipart/form-data'}
+                        }
+                    );
+
+                    this.fillCandidate(data.candidate);
+                    this.parsed = data;
+                }
+                catch (e) {
+                    this.$store.commit('setErrorMessage', 'Ошибка загрузки файла: '+e.toString());
+                }
+
+                this.isResumeUploading = false;
+            },
+            fillField(cvFieldName, candFieldValue) {
+                if (!this.cv[cvFieldName] && candFieldValue) {
+                    this.cv[cvFieldName] = candFieldValue;
+                }
+            },
+            fillCandidate(parsedCandidate) {
+                this.fillField('name', parsedCandidate.name);
+                this.fillField('position', parsedCandidate.position);
+                this.fillField('city', parsedCandidate.city);
+                this.fillField('phone', parsedCandidate.contacts && parsedCandidate.contacts.phone && parsedCandidate.contacts.phone[0] );
+                this.fillField('email', parsedCandidate.contacts && parsedCandidate.contacts.email && parsedCandidate.contacts.email[0] );
+
+                if (parsedCandidate.birthday) {
+                    let birthday = moment(parsedCandidate.birthday);
+                    let age = Math.floor( moment.duration(moment().diff(birthday)).as('years') );
+                    this.fillField('age', age);
+                }
+                else if (parsedCandidate.age) {
+                    this.fillField('age', parsedCandidate.age);
+                }
+
+                if (parsedCandidate.telegram) {
+                    this.telegram = parsedCandidate.telegram;
+                }
+
+                if (parsedCandidate.skills && parsedCandidate.skills.length > 0) {
+                    let parsedSkills = parsedCandidate.skills.map(skillName => ({title: skillName, level: false}));
+                    if (!this.cv.skills) {
+                        this.cv.skills = [];
+                    }
+                    this.cv.skills = this.cv.skills.concat(parsedSkills);
+                }
+
+                if (parsedCandidate.hh && parsedCandidate.hh.work && parsedCandidate.hh.work.length > 0) {
+                    this.cv.experience = parsedCandidate.hh.work.map(work => {
+                        return {
+                            position: work.position,
+                            employer: work.organisation,
+                            time: [work.start, work.end].join(' - '),
+                            about: work.description,
+                        }
+                    });
+                }
+
+                if (parsedCandidate.hh && parsedCandidate.hh.education && parsedCandidate.hh.education.length > 0) {
+                    this.cv.education = parsedCandidate.hh.education.map(edu => {
+                        return {
+                            speciality: edu.title || edu.type,
+                            organization: edu.organisation,
+                            time: edu.endYear,
+                            about: edu.details,
+                        }
+                    });
+                }
             }
         },
         computed: {

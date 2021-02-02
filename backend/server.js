@@ -1,6 +1,7 @@
 const Koa = require('koa');
 const Router = require('@koa/router');
 const bodyParser = require('koa-bodyparser');
+const multer = require('koa-multer');
 
 const cvs = require('./routes/cvs');
 const users = require('./routes/users');
@@ -10,13 +11,15 @@ const HOST = '0.0.0.0';
 
 const app = new Koa();
 const router = new Router();
+const upload = multer({});
 
 router
     .post('/api/cv/get', cvs.get)
     .post('/api/cv/list', cvs.list)
     .post('/api/cv/add', cvs.add)
     .post('/api/cv/update', cvs.update)
-    .post('/api/cv/delete', cvs.delete);
+    .post('/api/cv/delete', cvs.delete)
+    .post('/api/cv/resume', upload.single('file'), cvs.resume);
 
 router
     .post('/api/user/list', users.list)

@@ -1,0 +1,39 @@
+POST http://localhost:8194/api/cv/resume
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="pavlov.pdf"
+
+< ./pavlov.pdf
+--WebAppBoundary--
+###
+
+POST http://localhost:8194/api/cv/resume
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="hh.doc"
+
+< ./hh.doc
+--WebAppBoundary--
+###
+
+POST http://localhost:8194/api/cv/resume
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="nonhh.pdf"
+
+< ./nonhh.pdf
+--WebAppBoundary--
+###
+
+POST http://localhost:8194/api/cv/resume
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="hh.rtf"
+
+< ./hh.rtf
+--WebAppBoundary--
+###

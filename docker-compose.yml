@@ -1,4 +1,4 @@
-version: "3"
+version: "3.7"
 
 services:
   nginx:
@@ -20,6 +20,7 @@ services:
       - 9229:9229
     depends_on:
       - mongo
+      - converter
     volumes:
       - ./backend:/var/www
     working_dir: /var/www
@@ -27,6 +28,7 @@ services:
       - NODE_ENV=development
       - MONGO_HOST=cv_mongo
       - MONGO_DB=cv
+      - CONVERTER_URL=http://converter:3000
     command: npm run start
 
   mongo:
@@ -37,3 +39,6 @@ services:
       - ./etc/database:/data/db
     ports:
       - ${MONGO_PORT}:27017
+
+  converter:
+    image: lup098/unoconv-lo-convert-api

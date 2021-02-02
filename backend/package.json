@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node --inspect=0.0.0.0 server.js"
   },
   "repository": {
     "type": "git",
@@ -19,9 +19,13 @@
   "homepage": "https://github.com/lup-/jobbo#readme",
   "dependencies": {
     "@koa/router": "^10.0.0",
+    "axios": "^0.21.1",
     "crypto": "^1.0.1",
+    "form-data": "^3.0.0",
+    "he": "^1.2.0",
     "koa": "^2.13.0",
     "koa-bodyparser": "^4.3.0",
+    "koa-multer": "^1.0.2",
     "moment": "^2.29.1",
     "mongodb": "^3.6.3",
     "shortid": "^2.2.16"
